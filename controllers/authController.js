@@ -1,6 +1,5 @@
 //Impor Modul
 const { User } = require('../models');
-const crypto = require('crypto')
 const { verifyMessage } = require('ethers');
 const jwt = require('jsonwebtoken');
 const keccak256 = require('keccak256')
@@ -32,7 +31,7 @@ exports.loginPage = (req, res) => {
 // };
 
 exports.getNonce = async (req, res) => {
-
+  
   //Untuk mendapat address yang dikirim dari frontend
   const { address } = req.query;  
   if (!address) return res.status(400).json({ message: 'No address' });
@@ -128,7 +127,6 @@ exports.checkToken = (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     return res.json({ valid: true, user: decoded });
-    res
   } catch (err) {
     return res.json({ valid: false })
   }
