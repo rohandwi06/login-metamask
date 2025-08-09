@@ -1,4 +1,4 @@
-//Impor Modul
+//Impor method dan modul yang dibutuhkan
 const { User } = require('../models');
 const { verifyMessage } = require('ethers');
 const jwt = require('jsonwebtoken');
@@ -9,39 +9,21 @@ exports.loginPage = (req, res) => {
   res.render('auth');
 };
 
-// exports.getNonce = async (req, res) => {
-
-//   //Untuk mendapat address yang dikirim dari frontend
-//   const { address } = req.query;  
-//   if (!address) return res.status(400).json({ message: 'No address' });
-
-//   //Untuk cek apakah address terdapat pada database
-//   //Jika tidak ada, maka membuat data address
-//   let user = await User.findOne({ where: { address } });
-//   if (!user) {
-//     user = await User.create({
-//       address,
-//       nonce: Math.floor(Math.random() * 1000000),
-//       role: 'user'
-//     });
-//   }
-
-//   //Mengirim data nonce ke frontend
-//     res.json({ nonce: user.nonce });
-// };
-
+//Controller getNonce digunakan untuk mendapatkan data nonce yang akan di sign
 exports.getNonce = async (req, res) => {
   
-  //Untuk mendapat address yang dikirim dari frontend
+  //Untuk mendapat address yang dikirim dari frontend lewat query
   const { address } = req.query;  
   if (!address) return res.status(400).json({ message: 'No address' });
 
+  //Generate raw nonce dan meng-hash nya menggunakan keccak256
   const rawNonce = Math.floor(Math.random() * 1000000).toString();
   const hashedNonce = 'Login with nonce: ' + '0x' + keccak256(rawNonce).toString('hex')
 
-  //Untuk cek apakah address terdapat pada database
-  //Jika tidak ada, maka membuat data address
+  //Cek data user di database
   let user = await User.findOne({ where: { address } });
+
+  //Jika tidak ada, maka membuat data user baru
   if (!user) {
     user = await User.create({
       address,
@@ -52,72 +34,49 @@ exports.getNonce = async (req, res) => {
 
   //Mengirim data nonce ke frontend
     res.json({ nonce: hashedNonce });
-};
+}
 
-
-  // //Verifikasi signature
-  // exports.loginUser = async (req, res) => {
-  //   const { address, signature } = req.body;
-  //   if( !address || !signature ) return res.status(401).json({message: 'Address dan Signature dibutuhkan!'})
-
-  //   const user = await User.findOne({ where: { address } });
-  //   const message = `Login with nonce: ${user.nonce}`
-
-  //   try {
-  //     const signer = verifyMessage(message, signature);
-  //     if (signer.toLowerCase() !== address.toLowerCase()) {
-  //       return res.status(401).json({ message: 'Signature mismatch' });
-  //     }
-
-  //     user.nonce = Math.floor(Math.random() * 1000000); 
-  //     await user.save();
-
-  //     const token = jwt.sign(
-  //       { id: user.id, address: user.address, role: user.role },
-  //       process.env.JWT_SECRET,
-  //       { expiresIn: '1d' }
-  //     )
-
-  //     res.cookie('token', token, { httpOnly: true });
-  //     res.json({ message: 'Login berhasil' });
-  //   } catch (err) {
-  //     res.status(500).json({ message: 'Login gagal' });
-  //   }
-  // };
-
-  //Verifikasi signature
+  //Controller loginUser digunakan untuk memverifikasi signature
   exports.loginUser = async (req, res) => {
+
+    //Mendapatkan data address, signature, hashedMessage dari method post dari frontend
     const { address, signature, hashedMessage } = req.body;
     if( !address || !signature ) return res.status(401).json({message: 'Address dan Signature dibutuhkan!'})
 
+    //Cek data user
     const user = await User.findOne({ where: { address } });
 
     try {
+      
+      //Variabel signer digunakan untuk mendapatkan recovered address
       const signer = verifyMessage(hashedMessage, signature);
-      // Tambahkan log untuk debugging
-    console.log('✅ Recovered signer:', signer);
-    console.log('👤 Wallet address from frontend:', address);
+
+      //Cek apakah recovered address = user address
       if (signer.toLowerCase() !== address.toLowerCase()) {
         return res.status(401).json({ message: 'Signature mismatch' });
       }
 
+      //Generate raw nonce baru dan menyimpanya di data user di database
       user.nonce = Math.floor(Math.random() * 1000000).toString() 
       await user.save();
 
+      //Generate jwt untuk autentikasi
       const token = jwt.sign(
         { id: user.id, address: user.address, role: user.role },
         process.env.JWT_SECRET,
         { expiresIn: '1d' }
       )
 
+      //Menyimpan jwt di cookie
       res.cookie('token', token, { httpOnly: true });
+
       res.json({ message: 'Login berhasil' });
     } catch (err) {
       res.status(500).json({ message: 'Login gagal' });
     }
   };
 
-
+//Controller checkToken untuk cek apakah jwt masih valid atau tidak
 exports.checkToken = (req, res) => {
   const token = req.cookies.token;
   if (!token) {
