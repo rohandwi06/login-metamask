@@ -78,12 +78,18 @@ exports.getNonce = async (req, res) => {
 
 //Controller checkToken untuk cek apakah jwt masih valid atau tidak
 exports.checkToken = (req, res) => {
+
+  //Mendapatkan data token jwt dari cookie
   const token = req.cookies.token;
+
+  //Jika token tidak ada maka return tidak valid
   if (!token) {
     return res.json({ valid: false })
   }
 
   try {
+
+    //Menyimpan data 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     return res.json({ valid: true, user: decoded });
   } catch (err) {
