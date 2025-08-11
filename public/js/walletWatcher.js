@@ -53,7 +53,7 @@ function startWalletWatcher() {
   if (typeof window.ethereum === 'undefined') return;
 
   // Set interval polling
-  setInterval(checkAuthStatus, 3000);
+  setInterval(checkAuthStatus, 1500);
 
   // Listener jika akun wallet berubah
   ethereum.on('accountsChanged', async (accounts) => {
