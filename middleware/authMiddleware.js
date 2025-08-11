@@ -15,8 +15,6 @@ function verifyToken(req, res, next) {
 
     //Sekarang req.user juga berisi data yang sama dengan decoded
     req.user = decoded
-    console.log('req.user.id: ', req.user.id)
-    console.log('req.user.address: ', req.user.address)
 
     //Menyambungkan ke route handler berikutnya
     next()
