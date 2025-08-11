@@ -2,11 +2,6 @@
 
 window.isLoggingOut = window.isLoggingOut || false; // Flag untuk mencegah duplicate execution
 
-// 🟢 Sync dengan window flag kalau ada
-if (typeof window !== 'undefined' && window.isLoggingOut) {
-  isLoggingOut = true;
-}
-
 async function handleLogout() {
    // Cegah eksekusi ganda
   if (window.isLoggingOut) return;
@@ -21,7 +16,7 @@ async function handleLogout() {
   Swal.fire ({
     icon: 'error',
     title: 'Oops...',
-    text: 'Wallet disconnected. Logging out...',
+    text: 'Token invalid. Logging out...',
     timer: 1500,
     timerProgressBar: true,
     showConfirmButton: false

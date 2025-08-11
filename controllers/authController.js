@@ -13,7 +13,7 @@ exports.loginPage = (req, res) => {
 exports.getNonce = async (req, res) => {
   
   //Untuk mendapat address yang dikirim dari frontend lewat query
-  const { address } = req.query;  
+  const { address } = req.body;  
   if (!address) return res.status(400).json({ message: 'No address' });
 
   //Generate raw nonce dan meng-hash nya menggunakan keccak256

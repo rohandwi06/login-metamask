@@ -16,7 +16,7 @@ async function login() {
   const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
   const address = accounts[0];
 
-  const nonceRes = await axios.get(`/auth/nonce?address=${address}`);
+  const nonceRes = await axios.post(`/auth/nonce`, {address});
   const hashedMessage = nonceRes.data.nonce;
 
   const signature = await ethereum.request({
